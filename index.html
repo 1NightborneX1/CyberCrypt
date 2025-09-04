@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NightborneX's CyberCrypt - Futuristic Base64 Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-cyan: #00FFFF;
+            --primary-purple: #8B5CF6;
+            --primary-green: #00FF88;
+            --bg-dark: #0A0A0F;
+            --bg-darker: #050508;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #FFFFFF;
+            --text-secondary: #B3B3B3;
+            --text-muted: #666666;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 50%, #1a0d2e 100%);
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary-cyan);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(2n) {
+            background: var(--primary-purple);
+            animation-delay: -2s;
+        }
+
+        .particle:nth-child(3n) {
+            background: var(--primary-green);
+            animation-delay: -4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        .geometric-shape {
+            position: absolute;
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            background: rgba(0, 255, 255, 0.02);
+            animation: rotate3d 20s linear infinite;
+        }
+
+        @keyframes rotate3d {
+            0% {
+                transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+            }
+            100% {
+                transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg);
+            }
+        }
+
+        /* Header Styles */
+        .header {
+            position: relative;
+            z-index: 100;
+            padding: 2rem 1rem;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-cyan) 0%, var(--primary-purple) 50%, var(--primary-green) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+            }
+            100% {
+                text-shadow: 0 0 50px rgba(0, 255, 255, 0.6), 0 0 70px rgba(139, 92, 246, 0.3);
+            }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Converter Section */
+        .converter-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        @media (min-width: 1024px) {
+            .converter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            position: relative;
+            transform: perspective(1000px) rotateX(2deg);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, transparent 50%, rgba(139, 92, 246, 0.1) 100%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .panel:hover {
+            transform: perspective(1000px) rotateX(0deg) translateY(-10px);
+            border-color: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 20px 60px rgba(0, 255, 255, 0.1);
+        }
+
+        .panel:hover::before {
+            opacity: 1;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary-cyan);
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .panel-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .textarea {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: var(--text-primary);
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .textarea:focus {
+            outline: none;
+            border-color: var(--primary-cyan);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .textarea::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .char-counter {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 0.5rem;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid;
+            border-radius: 12px;
+            font-family: 'Orbitron', monospace;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+            transform: perspective(500px) rotateX(0deg);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: perspective(500px) rotateX(-5deg) translateY(-2px);
+        }
+
+        .btn-primary {
+            border-color: var(--primary-cyan);
+            color: var(--primary-cyan);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .btn-primary:hover {
+            background: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
+        }
+
+        .btn-secondary {
+            border-color: var(--primary-purple);
+            color: var(--primary-purple);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+        }
+
+        .btn-danger {
+            border-color: #EF4444;
+            color: #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transform: perspective(1000px) rotateY(-5deg);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(0, 255, 255, 0.05) 0%, transparent 50%, rgba(139, 92, 246, 0.05) 100%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: perspective(1000px) rotateY(0deg) translateY(-10px);
+            border-color: rgba(0, 255, 255, 0.4);
+            box-shadow: 0 25px 80px rgba(0, 255, 255, 0.1);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-purple));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+            animation: iconFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% {
+                transform: translateY(0px) scale(1);
+            }
+            50% {
+                transform: translateY(-10px) scale(1.05);
+            }
+        }
+
+        .feature-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            font-family: 'Orbitron', monospace;
+            font-weight: 500;
+            transform: translateX(400px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            box-shadow: 0 20px 60px rgba(0, 255, 255, 0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-color: var(--primary-green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .notification.error {
+            border-color: #EF4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* File Input */
+        .file-input {
+            display: none;
+        }
+
+        /* Drag and Drop */
+        .drag-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border: 3px dashed var(--primary-cyan);
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-cyan);
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        .drag-overlay.active {
+            display: flex;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .panel {
+                padding: 1.5rem;
+            }
+
+            .panel-actions {
+                flex-direction: column;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* SVG Icons */
+        .icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .icon-large {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-top: 2px solid var(--primary-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-container" id="bgContainer"></div>
+    <div class="drag-overlay" id="dragOverlay">
+        <div>Drop files here to encode</div>
+    </div>
+
+    <header class="header">
+        <h1 class="logo">CYBERCRYPT</h1>
+        <p class="subtitle">Advanced Base64 Encoding & Decoding Platform with Quantum Security Visualization</p>
+    </header>
+
+    <main class="container">
+        <div class="converter-grid">
+            <!-- Plain Text Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <svg class="panel-icon icon" viewBox="0 0 24 24">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                        <circle cx="12" cy="16" r="1"/>
+                    </svg>
+                    <h2 class="panel-title">Plain Text</h2>
+                </div>
+                <div class="textarea-wrapper">
+                    <textarea 
+                        id="plainText" 
+                        class="textarea" 
+                        placeholder="Enter your text to encode or drag & drop files here..."
+                        rows="8"
+                    ></textarea>
+                    <div class="char-counter" id="plainCounter">0 characters</div>
+                </div>
+                <div class="panel-actions">
+                    <button class="btn btn-primary" id="copyPlain">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                            <path d="m4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                        </svg>
+                        Copy
+                    </button>
+                    <button class="btn btn-secondary" id="uploadFile">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                        </svg>
+                        Upload File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Base64 Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <svg class="panel-icon icon" viewBox="0 0 24 24">
+                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                        <circle cx="12" cy="16" r="1"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    <h2 class="panel-title">Base64 Encoded</h2>
+                </div>
+                <div class="textarea-wrapper">
+                    <textarea 
+                        id="encodedText" 
+                        class="textarea" 
+                        placeholder="Enter Base64 text to decode..."
+                        rows="8"
+                    ></textarea>
+                    <div class="char-counter" id="encodedCounter">0 characters</div>
+                </div>
+                <div class="panel-actions">
+                    <button class="btn btn-primary" id="copyEncoded">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                            <path d="m4 16c-1.1 0-2-.9-2 2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                        </svg>
+                        Copy
+                    </button>
+                    <button class="btn btn-danger" id="clearAll">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M3 6h18"/>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                        </svg>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg class="icon-large" viewBox="0 0 24 24" fill="white">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Lightning Fast</h3>
+                <p class="feature-description">Real-time encoding and decoding with instant visual feedback and zero latency processing.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg class="icon-large" viewBox="0 0 24 24" fill="white">
+                        <rect width="18" height="18" x="3" y="3" rx="2"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Secure Processing</h3>
+                <p class="feature-description">Client-side processing ensures your data never leaves your device. Complete privacy guaranteed.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg class="icon-large" viewBox="0 0 24 24" fill="white">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">File Support</h3>
+                <p class="feature-description">Upload any file type for encoding or drag and drop files directly into the interface.</p>
+            </div>
+        </div>
+    </main>
+
+    <div class="notification" id="notification"></div>
+    <input type="file" id="fileInput" class="file-input" />
+
+    <script>
+        // DOM Elements
+        const plainTextArea = document.getElementById('plainText');
+        const encodedTextArea = document.getElementById('encodedText');
+        const plainCounter = document.getElementById('plainCounter');
+        const encodedCounter = document.getElementById('encodedCounter');
+        const copyPlainBtn = document.getElementById('copyPlain');
+        const copyEncodedBtn = document.getElementById('copyEncoded');
+        const uploadBtn = document.getElementById('uploadFile');
+        const clearBtn = document.getElementById('clearAll');
+        const fileInput = document.getElementById('fileInput');
+        const notification = document.getElementById('notification');
+        const dragOverlay = document.getElementById('dragOverlay');
+        const bgContainer = document.getElementById('bgContainer');
+
+        // Background Animation
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDuration = (3 + Math.random() * 4) + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                bgContainer.appendChild(particle);
+            }
+        }
+
+        function createGeometricShapes() {
+            for (let i = 0; i < 5; i++) {
+                const shape = document.createElement('div');
+                shape.className = 'geometric-shape';
+                const size = 100 + Math.random() * 200;
+                shape.style.width = size + 'px';
+                shape.style.height = size + 'px';
+                shape.style.left = Math.random() * 100 + '%';
+                shape.style.top = Math.random() * 100 + '%';
+                shape.style.animationDuration = (15 + Math.random() * 10) + 's';
+                shape.style.animationDelay = Math.random() * 5 + 's';
+                bgContainer.appendChild(shape);
+            }
+        }
+
+        // Notification System
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Base64 Conversion Functions
+        function encodeToBase64(text) {
+            try {
+                return btoa(unescape(encodeURIComponent(text)));
+            } catch (error) {
+                showNotification('Failed to encode text', 'error');
+                return '';
+            }
+        }
+
+        function decodeFromBase64(encoded) {
+            try {
+                return decodeURIComponent(escape(atob(encoded)));
+            } catch (error) {
+                showNotification('Invalid Base64 format', 'error');
+                return '';
+            }
+        }
+
+        // Update Character Counters
+        function updateCounter(element, text, counterId) {
+            const counter = document.getElementById(counterId);
+            const length = text.length;
+            const bytes = new Blob([text]).size;
+            counter.textContent = `${length} characters • ${bytes} bytes`;
+        }
+
+        // Event Listeners
+        plainTextArea.addEventListener('input', (e) => {
+            const value = e.target.value;
+            updateCounter(plainTextArea, value, 'plainCounter');
+            
+            if (value) {
+                const encoded = encodeToBase64(value);
+                encodedTextArea.value = encoded;
+                updateCounter(encodedTextArea, encoded, 'encodedCounter');
+            } else {
+                encodedTextArea.value = '';
+                updateCounter(encodedTextArea, '', 'encodedCounter');
+            }
+        });
+
+        encodedTextArea.addEventListener('input', (e) => {
+            const value = e.target.value;
+            updateCounter(encodedTextArea, value, 'encodedCounter');
+            
+            if (value) {
+                const decoded = decodeFromBase64(value);
+                if (decoded) {
+                    plainTextArea.value = decoded;
+                    updateCounter(plainTextArea, decoded, 'plainCounter');
+                }
+            } else {
+                plainTextArea.value = '';
+                updateCounter(plainTextArea, '', 'plainCounter');
+            }
+        });
+
+        // Copy to Clipboard
+        async function copyToClipboard(text, label) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showNotification(`${label} copied to clipboard!`);
+            } catch (error) {
+                showNotification('Failed to copy to clipboard', 'error');
+            }
+        }
+
+        copyPlainBtn.addEventListener('click', () => {
+            if (plainTextArea.value) {
+                copyToClipboard(plainTextArea.value, 'Plain text');
+            } else {
+                showNotification('No text to copy', 'error');
+            }
+        });
+
+        copyEncodedBtn.addEventListener('click', () => {
+            if (encodedTextArea.value) {
+                copyToClipboard(encodedTextArea.value, 'Encoded text');
+            } else {
+                showNotification('No encoded text to copy', 'error');
+            }
+        });
+
+        // Clear All
+        clearBtn.addEventListener('click', () => {
+            plainTextArea.value = '';
+            encodedTextArea.value = '';
+            updateCounter(plainTextArea, '', 'plainCounter');
+            updateCounter(encodedTextArea, '', 'encodedCounter');
+            showNotification('Content cleared');
+        });
+
+        // File Upload
+        uploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', handleFileUpload);
+
+        function handleFileUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            
+            if (file.type.startsWith('text/')) {
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    plainTextArea.value = text;
+                    const encoded = encodeToBase64(text);
+                    encodedTextArea.value = encoded;
+                    updateCounter(plainTextArea, text, 'plainCounter');
+                    updateCounter(encodedTextArea, encoded, 'encodedCounter');
+                    showNotification(`Text file "${file.name}" loaded successfully`);
+                };
+                reader.readAsText(file);
+            } else {
+                reader.onload = (e) => {
+                    const dataUrl = e.target.result;
+                    const base64 = dataUrl.split(',')[1];
+                    encodedTextArea.value = base64;
+                    plainTextArea.value = `[Binary file: ${file.name}]`;
+                    updateCounter(plainTextArea, plainTextArea.value, 'plainCounter');
+                    updateCounter(encodedTextArea, base64, 'encodedCounter');
+                    showNotification(`Binary file "${file.name}" encoded to Base64`);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Drag and Drop
+        let dragCounter = 0;
+
+        document.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            dragOverlay.classList.add('active');
+        });
+
+        document.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter <= 0) {
+                dragOverlay.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dragOverlay.classList.remove('active');
+            
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileUpload({ target: { files: files } });
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            createGeometricShapes();
+            updateCounter(plainTextArea, '', 'plainCounter');
+            updateCounter(encodedTextArea, '', 'encodedCounter');
+        });
+
+        // 3D Mouse Movement Effect
+        document.addEventListener('mousemove', (e) => {
+            const panels = document.querySelectorAll('.panel');
+            const featureCards = document.querySelectorAll('.feature-card');
+            
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+            
+            panels.forEach((panel, index) => {
+                const rotateX = (mouseY - 0.5) * 10;
+                const rotateY = (mouseX - 0.5) * 10;
+                
+                if (!panel.matches(':hover')) {
+                    panel.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }
+            });
+            
+            featureCards.forEach((card, index) => {
+                const rotateX = (mouseY - 0.5) * 8;
+                const rotateY = (mouseX - 0.5) * 8;
+                
+                if (!card.matches(':hover')) {
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }
+            });
+        });
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        if (document.activeElement === plainTextArea) {
+                            copyToClipboard(encodedTextArea.value, 'Encoded text');
+                        } else if (document.activeElement === encodedTextArea) {
+                            copyToClipboard(plainTextArea.value, 'Plain text');
+                        }
+                        break;
+                    case 'k':
+                        e.preventDefault();
+                        clearBtn.click();
+                        break;
+                    case 'o':
+                        e.preventDefault();
+                        uploadBtn.click();
+                        break;
+                }
+            }
+        });
+
+        // Add visual feedback for button interactions
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('div');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.3);
+                    transform: scale(0);
+                    animation: ripple 0.6s ease-out;
+                    pointer-events: none;
+                `;
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // CSS animation for ripple effect
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
